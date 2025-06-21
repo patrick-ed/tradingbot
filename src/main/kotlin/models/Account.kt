@@ -10,5 +10,5 @@ data class Account(
     val status: String,
     val currency: String,
     @SerialName("buying_power") val buyingPower: String,
-    val equity: String,
+    val equity: String
 )

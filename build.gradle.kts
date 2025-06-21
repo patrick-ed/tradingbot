@@ -1,9 +1,11 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     kotlin("jvm") version "2.1.10"
+    kotlin("plugin.serialization") version "1.9.22"
     id("application")
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    // For kotlinx.serialization
-    kotlin("plugin.serialization") version "1.9.22"
+    application
 }
 
 group = "org.example"
@@ -56,4 +58,24 @@ application {
 }
 kotlin {
     jvmToolchain(21)
+}
+
+tasks.withType<JavaExec> {
+    if (name == "run") {
+        standardInput = System.`in`
+    }
+}
+
+/**
+ * Custom task to build the fat JAR and run it immediately.
+ *
+ * Usage: ./gradlew bootRun
+ */
+tasks.register<JavaExec>("bootRun") {
+    group = "application"
+    description = "Builds the fat JAR and runs the application, enabling graceful shutdown."
+    dependsOn(tasks.named("shadowJar"))
+    val shadowJarTask = tasks.getByName<ShadowJar>("shadowJar")
+    classpath = files(shadowJarTask.archiveFile)
+    standardInput = System.`in`
 }
